@@ -1,26 +1,31 @@
 #include <asm.h>
 
+# 启动CPU：切换到 32 位保护模式，跳转到 C
+# BIOS 将此代码从硬盘的第一个扇区加载到物理地址 0x7c00 的内存中
+# 并以 %cs = 0 %ip=7c00 在实模式下运行
 # Start the CPU: switch to 32-bit protected mode, jump into C.
 # The BIOS loads this code from the first sector of the hard disk into
 # memory at physical address 0x7c00 and starts executing in real mode
 # with %cs=0 %ip=7c00.
 
-.set PROT_MODE_CSEG,        0x8                     # kernel code segment selector
-.set PROT_MODE_DSEG,        0x10                    # kernel data segment selector
-.set CR0_PE_ON,             0x1                     # protected mode enable flag
+.set PROT_MODE_CSEG,        0x8                     # kernel code segment selector 内核代码选择器
+.set PROT_MODE_DSEG,        0x10                    # kernel data segment selector 内核数据选择器
+.set CR0_PE_ON,             0x1                     # protected mode enable flag 启动保护模式标志
 
+# 起始地址应该是: 0:7c00,在实模式下，是正在运行的引导程序的起始地址
 # start address should be 0:7c00, in real mode, the beginning address of the running bootloader
 .globl start
 start:
-.code16                                             # Assemble for 16-bit mode
-    cli                                             # Disable interrupts
-    cld                                             # String operations increment
+.code16                                             # Assemble for 16-bit mode 组装为 16 位模式
+    cli                                             # Disable interrupts 禁止中断
+    cld                                             # String operations increment 字符串运算增量
 
     # Set up the important data segment registers (DS, ES, SS).
-    xorw %ax, %ax                                   # Segment number zero
-    movw %ax, %ds                                   # -> Data Segment
-    movw %ax, %es                                   # -> Extra Segment
-    movw %ax, %ss                                   # -> Stack Segment
+    # 设置重要的数据段寄存器（DS, ES, SS）
+    xorw %ax, %ax                                   # Segment number zero 段号 0 寄存器
+    movw %ax, %ds                                   # -> Data Segment 数据段
+    movw %ax, %es                                   # -> Extra Segment 扩展段
+    movw %ax, %ss                                   # -> Stack Segment 栈段
 
     # Enable A20:
     #  For backwards compatibility with the earliest PCs, physical
